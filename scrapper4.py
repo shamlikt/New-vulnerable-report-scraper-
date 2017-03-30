@@ -85,16 +85,16 @@ class DataScraper:
         ''' This method is used for parsing https://technet.microsoft.com/en-us/security/advisories'''
         data = self.get_html_data(url)
         table_data = data.find('div', class_="", id="sec_advisory")
-        for row in table_data.find_all('tr'):
+
+        for row in table_data.find_all('tr')[1:]:
             temp_data = deepcopy(self.value)                # creating copy of self.value
             colomns = row.find_all('td')
             temp_data['date'] = colomns[0].text.strip()
             temp_data['val_name'] = colomns[2].text.strip()
 
-            page_link = colomns[2].find('a').get('href')   # Creating link address  -- ERROR
-            print (page_link)
+            page_link = colomns[2].find('a').get('href')
 
-            
+        # will add soon    
             
             
             
