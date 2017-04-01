@@ -83,24 +83,26 @@ class DataScraper:
 
     def scrape_microsoft(self, url):
         ''' This method is used for parsing https://technet.microsoft.com/en-us/security/advisories'''
-        data = self.get_html_data(url)
-        table_data = data.find('div', class_="", id="sec_advisory")
-
-        for row in table_data.find_all('tr')[1:]:
+        data = self.get_html_data(url)      # souping
+        table_data = data.find('div', class_="", id="sec_advisory") # identifying the required tag
+        for row in table_data.find_all('tr')[1:10]:   # Iterating through advisory column 
             temp_data = deepcopy(self.value)                # creating copy of self.value
             colomns = row.find_all('td')
             temp_data['date'] = colomns[0].text.strip()
             temp_data['val_name'] = colomns[2].text.strip()
+            page_link = colomns[2].find('a').get('href')    # child link to advisory
+            new_data = self.get_html_data(page_link)    # souping
 
-            page_link = colomns[2].find('a').get('href')
-
-        # will add soon    
-            
-            
-            
-            
-            
-            
+            temp_data['description'] = new_data.find("div", id="mainBody").find_all('p')[2].text    
+            if new_data.find("table", summary="table"):     # checking for tables
+                table = new_data.find("table", summary="table") # table datas
+                table_rows = len(table.find_all('tr'))  # validating
+                i = 2
+                if(table_rows > 2):
+                    for i in range(table_rows): # iterating for all affected products list
+                        if(table.find_all('tr')[i].p):
+                            temp_data['affected'] = table.find_all('tr')[i].p.text.strip()
+            self.data.append(temp_data) # appending temp data info to class variable called self.data            
             
 def write_data(file_name, data):
     ''' Method used for writing data into .xls file '''
