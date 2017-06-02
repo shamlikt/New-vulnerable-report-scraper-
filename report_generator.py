@@ -42,10 +42,10 @@ def parse_args():
 def suppressors(fun):
     def fun_wrapper(*largs, **kargs):
         try:
-            print ('Scraping {}'.format(largs[-1]))
+            print ('\nScraping {}'.format(largs[-1]), end=" ")
             return fun(*largs, **kargs)
         except:
-            print('Error while handling {}'.format(largs[-1]))
+            print('\nError while handling {}'.format(largs[-1]))
             print ('Skipping url')
             pass
     return fun_wrapper
@@ -188,6 +188,7 @@ class DataScraper:
             temp_data_fn['solution'] = "Information not available in website" 
             self.data.append(temp_data_fn) # appending temp data info to class variable called self.data
 
+    @suppressors
     def scrape_brocade(self, url):
         # ''' This method is used for parsing http://www.brocade.com/en/support/security-advisories.html'''
         data_br = self.get_html_data(url)      # souping
@@ -345,7 +346,6 @@ def write_data(file_name, data, period):
 
 
 def main(template):
-
     if not os.path.exists(template):
         raise IOError('Template file not found , Please check repo')
 
@@ -356,13 +356,13 @@ def main(template):
         period = 30
 
     obj = DataScraper()
-    # # obj.scrape_kb_crt('https://www.kb.cert.org/vuls/')
-    # # obj.scrape_vmware('http://www.vmware.com/security/advisories')
-    # # obj.scrape_microsoft('https://technet.microsoft.com/en-us/security/advisories')
-    # # obj.scrape_fortinet('http://www.fortiguard.com/psirt')
+    obj.scrape_kb_crt('https://www.kb.cert.org/vuls/')
+    obj.scrape_vmware('http://www.vmware.com/security/advisories')
+    obj.scrape_microsoft('https://technet.microsoft.com/en-us/security/advisories')
+    obj.scrape_fortinet('http://www.fortiguard.com/psirt')
     obj.scrape_brocade('http://www.brocade.com/en/support/security-advisories.html')
-    # # obj.scrape_juniper('https://kb.juniper.net/InfoCenter/index?page=content&channel=SECURITY_ADVISORIES')
-    # # obj.scrape_cisco('http://tools.cisco.com/security/center/publicationListing.x')   
+    obj.scrape_juniper('https://kb.juniper.net/InfoCenter/index?page=content&channel=SECURITY_ADVISORIES')
+    obj.scrape_cisco('http://tools.cisco.com/security/center/publicationListing.x')   
 
     today = datetime.today().date()
     dest_file = 'Security_Advisories_{}.xlsx'.format(today)
