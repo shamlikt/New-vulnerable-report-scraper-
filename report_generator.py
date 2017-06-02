@@ -16,6 +16,7 @@ import xlwt
 import json
 import openpyxl
 import lxml.html
+import os
 
 from bs4 import BeautifulSoup
 from lxml.cssselect import CSSSelector
@@ -41,7 +42,7 @@ def parse_args():
 def suppressors(fun):
     def fun_wrapper(*largs, **kargs):
         try:
-            print ('Getting value from {}'.format(largs[-1]))
+            print ('Scraping {}'.format(largs[-1]))
             return fun(*largs, **kargs)
         except:
             print('Error while handling {}'.format(largs[-1]))
@@ -49,8 +50,7 @@ def suppressors(fun):
             pass
     return fun_wrapper
 
-class DataScraper:
-    
+class DataScraper:    
     def __init__(self):
         ''' Initializing data structure, self.value is a python dict
        which is used for storing fields of excel table '''
@@ -66,6 +66,7 @@ class DataScraper:
 
     def get_html_data(self, url):
          ''' Method to fetch html data and return a Beutifulsoup object'''
+         print('.', end=" ")
          return BeautifulSoup(get(url).text, "html.parser")
 
     @suppressors
@@ -187,7 +188,6 @@ class DataScraper:
             temp_data_fn['solution'] = "Information not available in website" 
             self.data.append(temp_data_fn) # appending temp data info to class variable called self.data
 
-    @suppressors
     def scrape_brocade(self, url):
         # ''' This method is used for parsing http://www.brocade.com/en/support/security-advisories.html'''
         data_br = self.get_html_data(url)      # souping
@@ -292,7 +292,6 @@ class DataScraper:
             page_link_ci = dictionary['url']
             temp_data_ci['link'] = page_link_ci
             # Scraping the CSS part
-            print (page_link_ci)
             css_data = get(page_link_ci)
             css_tree = lxml.html.fromstring(css_data.text)  # build the DOM Tree
             sel = CSSSelector('meta')   # construct a CSS Selector
@@ -345,7 +344,10 @@ def write_data(file_name, data, period):
     wb.save(filename=file_name)
 
 
-def main():
+def main(template):
+
+    if not os.path.exists(template):
+        raise IOError('Template file not found , Please check repo')
 
     args = parse_args()
     if args.weekly:
@@ -353,20 +355,22 @@ def main():
     elif args.monthly:
         period = 30
 
-    obj= DataScraper()
-    obj.scrape_kb_crt('https://www.kb.cert.org/vuls/')
-    obj.scrape_vmware('http://www.vmware.com/security/advisories')
-    obj.scrape_microsoft('https://technet.microsoft.com/en-us/security/advisories')
-    obj.scrape_fortinet('http://www.fortiguard.com/psirt')
+    obj = DataScraper()
+    # # obj.scrape_kb_crt('https://www.kb.cert.org/vuls/')
+    # # obj.scrape_vmware('http://www.vmware.com/security/advisories')
+    # # obj.scrape_microsoft('https://technet.microsoft.com/en-us/security/advisories')
+    # # obj.scrape_fortinet('http://www.fortiguard.com/psirt')
     obj.scrape_brocade('http://www.brocade.com/en/support/security-advisories.html')
-    obj.scrape_juniper('https://kb.juniper.net/InfoCenter/index?page=content&channel=SECURITY_ADVISORIES')  #Optimize
-    obj.scrape_cisco('http://tools.cisco.com/security/center/publicationListing.x')   
-
-#    download_template('Link', 'Security_Advisories_And_Bulletins_-_As_Of_DATE.xlsx')  # --Optional--
+    # # obj.scrape_juniper('https://kb.juniper.net/InfoCenter/index?page=content&channel=SECURITY_ADVISORIES')
+    # # obj.scrape_cisco('http://tools.cisco.com/security/center/publicationListing.x')   
 
     today = datetime.today().date()
-    copyfile('Security_Advisories_And_Bulletins_-Template.xlsx', 'Security_Advisories_And_Bulletins.xlsx')
-    write_data('Security_Advisories_And_Bulletins.xlsx', obj.data, period)
-    
+    dest_file = 'Security_Advisories_{}.xlsx'.format(today)
+    copyfile(template, dest_file)
+    write_data(dest_file, obj.data, period)
+
 if __name__ == '__main__':
-    main()
+    path = os.path.realpath(__file__)
+    dir_name = os.path.dirname(path)
+    template_file = os.path.join(dir_name, 'Template.xlsx')
+    main(template_file)
