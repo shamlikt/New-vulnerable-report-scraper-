@@ -1,0 +1,21 @@
+** Vulnerability report generator 
+    This is a simple scarping script which extract new vulnerability information
+    from following vendors site
+    - US Cert Alerts and Current Activity (http://www.us-cert.gov/)
+    - Secunia (http://secunia.com/advisories/)
+    - Cisco (http://tools.cisco.com/security/center/publicationListing.x)
+    - Microsoft (https://technet.microsoft.com/en-us/security/advisories)
+    - Juniper (https://kb.juniper.net/InfoCenter/index?page=content&channel=SECURITY_ADVISORIES)
+    - Fortinet (http://www.fortiguard.com/advisory)
+    - Vmware http://www.vmware.com/security/advisories
+    - Brocade http://www.brocade.com/en/support/security-advisories.html
+
+*** Install
+    - =apt-get install python3 python3-pip=
+    - =git clone https://github.com/shamlikt/New-vulnerable-report-scraper-=
+    - =pip3 install -r equirements.txt=
+
+*** Usage 
+    python3 report_generator.py [-h] (-w | -m)
+    - -w/--weekly  : Create report for last week
+    - -m/--monthly : Create report for last month
